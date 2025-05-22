@@ -2,7 +2,7 @@
 using MimeKit;
 using UserRegistration.Data;
 using UserRegistration.Models;
-using MailKit.Net.Smtp; 
+using MailKit.Net.Smtp;
 using MailKit.Security;
 
 namespace UserRegistration.Controllers
@@ -36,16 +36,19 @@ namespace UserRegistration.Controllers
                 message.From.Add(new MailboxAddress("Broad Systems Ltd.", "yourmail@gmail.com"));
                 message.To.Add(new MailboxAddress(user.Name, user.Email));
                 message.Subject = "Registration Success!";
-                message.Body = new TextPart("plain")
+                message.Body = new TextPart("html")
                 {
-                    Text = $"Assalamualaikum {user.Name},\n\n" +
-                           "Welcome to Broad Systems Ltd.!\n" +
-                           "Your registration was successful. We're excited to have you on board.\n" +
-                           "Feel free to explore our services and reach out if you need any assistance.\n\n\n" +
-                           "Best regards,\n" +
-                           "Broad Systems Ltd.\n" +
-                           "Email: ibrahimkholil01@gmail.com\n" +
-                           "Website: www.broadsystems.com"
+                    Text = $@"
+                     <p>Assalamualaikum <strong>{user.Name}</strong>,</p>
+                     <p>Welcome to <strong>Broad Systems Ltd.</strong>!</p>
+                     <p>Your registration was successful. We're excited to have you on our company <strong>Broad Systems</strong>.</p>
+                     <p>Feel free to explore our services and reach out if you need any assistance.</p>
+                     <br />
+                     <p>Best regards,</p>
+                     <p><strong>Broad Systems Ltd.</strong><br />
+                     Email: ibrahimkholil01@gmail.com<br />
+                     Website: <a href='https://www.facebook.com/ibrahim.khalil.0165'>www.broadsystems.com</a><br />
+                     Phone: 01932878112</p>"
                 };
 
                 using (var client = new SmtpClient())
@@ -56,9 +59,10 @@ namespace UserRegistration.Controllers
                     await client.DisconnectAsync(true);
                 }
                 TempData["SuccessMessage"] = "Registration successful! Check your email.";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Welcome", "Home");
             }
-            return View(form);
+            return View("Index", form);
+
         }
     }
 }
