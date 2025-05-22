@@ -23,11 +23,19 @@ namespace UserRegistration.Controllers
         {
             if (ModelState.IsValid)
             {
+                var existingUser = _context.UserRegistrations.FirstOrDefault(u => u.Email == form.Email);
+
+                if (existingUser != null)
+                {
+                    ModelState.AddModelError("Email", "This email is already registered.");
+                    return View("Index", form);
+                }
+
                 var user = new User
                 {
                     Name = form.Name,
                     Email = form.Email,
-                    Password = form.Password // In a real application, hash the password before saving
+                    Password = form.Password 
                 };
                 _context.UserRegistrations.Add(user);
                 await _context.SaveChangesAsync();
@@ -35,34 +43,35 @@ namespace UserRegistration.Controllers
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress("Broad Systems Ltd.", "yourmail@gmail.com"));
                 message.To.Add(new MailboxAddress(user.Name, user.Email));
-                message.Subject = "Registration Success!";
+                message.Subject = "Registration Done Successfully!";
                 message.Body = new TextPart("html")
                 {
                     Text = $@"
-                     <p>Assalamualaikum <strong>{user.Name}</strong>,</p>
-                     <p>Welcome to <strong>Broad Systems Ltd.</strong>!</p>
-                     <p>Your registration was successful. We're excited to have you on our company <strong>Broad Systems</strong>.</p>
-                     <p>Feel free to explore our services and reach out if you need any assistance.</p>
-                     <br />
-                     <p>Best regards,</p>
-                     <p><strong>Broad Systems Ltd.</strong><br />
-                     Email: ibrahimkholil01@gmail.com<br />
-                     Website: <a href='https://www.facebook.com/ibrahim.khalil.0165'>www.broadsystems.com</a><br />
-                     Phone: 01932878112</p>"
+                <p>Assalamualaikum <strong>{user.Name}</strong>,</p>
+                <p>Welcome to <strong>Broad Systems Ltd.</strong>!</p>
+                <p>Your registration was successful. We're excited to have you on our company <strong>Broad Systems</strong>.</p>
+                <p>Feel free to explore our services and reach out if you need any assistance.</p>
+                <br />
+                <p>Best regards,</p>
+                <p><strong>Broad Systems Ltd.</strong><br />
+                Email: ibrahimkholil01@gmail.com<br />
+                Website: <a href='https://www.facebook.com/ibrahim.khalil.0165'>www.broadsystems.com</a><br />
+                Phone: 01932878112</p>"
                 };
 
                 using (var client = new SmtpClient())
                 {
                     await client.ConnectAsync("smtp.gmail.com", 587, false);
-                    await client.AuthenticateAsync("ibrahimkholil01@gmail.com", "slez wgeq eprf jnlp ");
+                    await client.AuthenticateAsync("ibrahimkholil01@gmail.com", "slez wgeq eprf jnlp");
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);
                 }
+
                 TempData["SuccessMessage"] = "Registration successful! Check your email.";
                 return RedirectToAction("Welcome", "Home");
             }
-            return View("Index", form);
 
+            return View("Index", form);
         }
     }
 }
